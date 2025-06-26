@@ -1,4 +1,5 @@
-const API_BASE_URL = "http://localhost:3001/api";
+// Use relative URL so it works with the same server
+const API_BASE_URL = "/api";
 
 export interface InventoryItem {
   id: string;

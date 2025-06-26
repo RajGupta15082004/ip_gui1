@@ -4,11 +4,14 @@ const fs = require("fs").promises;
 const path = require("path");
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from dist directory (after build)
+app.use(express.static(path.join(__dirname, "dist")));
 
 // Data file path
 const DATA_FILE = path.join(__dirname, "inventory.json");
@@ -295,12 +298,24 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Serve React app for all non-API routes
+app.get("*", (req, res) => {
+  // Skip API routes
+  if (req.path.startsWith("/api")) {
+    return res.status(404).json({ error: "API endpoint not found" });
+  }
+
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
+
 // Initialize and start server
 async function startServer() {
   await initializeDataFile();
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`API endpoints available at http://localhost:${PORT}/api`);
+    console.log(`🚀 NetMonitor Server is running on port ${PORT}`);
+    console.log(`📱 Frontend: http://localhost:${PORT}`);
+    console.log(`🔗 API: http://localhost:${PORT}/api`);
+    console.log(`💾 Data storage: ${DATA_FILE}`);
   });
 }
 
