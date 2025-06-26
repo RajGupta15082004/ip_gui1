@@ -11,7 +11,10 @@
     "backend": "node server.js",
     "start-backend": "node start-backend.js",
     "dev:full": "concurrently \"npm run backend\" \"npm run dev\"",
-    "setup": "npm install && npm install express cors multer"
+    "setup": "npm install && npm install express cors multer",
+    "start": "npm run build && node server.js",
+    "production": "npm run build && node server.js",
+    "quick-start": "node start.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
