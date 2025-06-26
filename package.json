@@ -7,7 +7,14 @@
     "build": "vite build",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "backend": "node server.js",
+    "start-backend": "node start-backend.js",
+    "dev:full": "concurrently \"npm run backend\" \"npm run dev\"",
+    "setup": "npm install && npm install express cors multer",
+    "start": "npm run build && node server.js",
+    "production": "npm run build && node server.js",
+    "quick-start": "node start.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -75,6 +82,7 @@
     "@types/xlsx": "^0.0.35",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.2.0",
     "globals": "^15.9.0",
     "postcss": "^8.4.47",
     "prettier": "^3.5.3",
