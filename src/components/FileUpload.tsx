@@ -33,23 +33,53 @@ export function FileUpload({ onFileUploaded, className }: FileUploadProps) {
       } else if (
         file.name.endsWith(".xlsx") ||
         file.name.endsWith(".xls") ||
-        file.type.includes("spreadsheet")
+        file.type.includes("spreadsheet") ||
+        file.type.includes("excel")
       ) {
-        result = await parseExcel(file);
+        // Handle Excel files - convert to CSV first
+        try {
+          result = await parseExcel(file);
+        } catch (excelError) {
+          // If Excel parsing fails, show more helpful error
+          setErrors([
+            "Failed to process Excel file. Please ensure it's a valid .xlsx or .xls file, or try converting it to CSV format manually.",
+            excelError instanceof Error
+              ? excelError.message
+              : "Unknown Excel parsing error",
+          ]);
+          return;
+        }
       } else {
-        // Try to parse as CSV anyway
-        const content = await file.text();
-        result = parseCSV(content);
+        // For unknown file types, try to parse as CSV
+        try {
+          const content = await file.text();
+          result = parseCSV(content);
+        } catch (csvError) {
+          setErrors([
+            "Unsupported file type. Please upload a CSV (.csv) or Excel (.xlsx, .xls) file.",
+            "If this is a text file with IP addresses, please save it with a .csv extension.",
+          ]);
+          return;
+        }
       }
 
       if (result.errors.length > 0) {
         setErrors(result.errors);
       }
 
+      if (result.entries.length === 0) {
+        setErrors([
+          "No valid IP addresses found in the file. Please check the file format and content.",
+        ]);
+        return;
+      }
+
       onFileUploaded(result);
     } catch (error) {
       setErrors([
-        error instanceof Error ? error.message : "Failed to process file",
+        "Failed to process file: " +
+          (error instanceof Error ? error.message : "Unknown error"),
+        "Please try uploading a different file or check the file format.",
       ]);
     } finally {
       setIsProcessing(false);
@@ -90,7 +120,8 @@ export function FileUpload({ onFileUploaded, className }: FileUploadProps) {
               Upload IP List
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Upload a CSV or Excel file containing IP addresses to monitor
+              Upload CSV or Excel files - Excel files will be automatically
+              converted to CSV format
             </p>
           </div>
 
@@ -175,14 +206,14 @@ export function FileUpload({ onFileUploaded, className }: FileUploadProps) {
               className="w-full max-w-xs"
             >
               <Upload className="w-4 h-4 mr-2" />
-              Choose File (CSV or Excel)
+              Choose File (.csv, .xlsx, .xls)
             </Button>
           </div>
 
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv,.xlsx,.xls"
+            accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
             onChange={handleFileInputChange}
             className="hidden"
           />
